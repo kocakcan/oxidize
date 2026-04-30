@@ -113,6 +113,76 @@
 /// The first time we call example_closure with the String value, the compiler infers the type of x
 /// and the return type of the closure to be String. Those types are then locked into the closure
 /// in example_closure, and we get a type error when we try to use a different type with the same closure.
+///
+/// Capturing References or Moving Ownership
+///
+/// Closures can capture values from their environment in three ways, which directly map to the
+/// three ways a function can take a parameter: borrowing immutably, borrowing mutably, and taking
+/// ownership. The closure will decide which of these to use based on what the body of the function
+/// does with the captured values.
+///
+/// In Listing 13-4, we define a closure that captures an immutable reference to the vector named
+/// list because it only need a immutable reference to print the value.
+///
+///     fn main() {
+///         let list = vec![1, 2, 3];
+///         println!("Before defining closure: {list:?}");
+///
+///         let only_borrows = || println!("From closure: {list:?}");
+///
+///         println!("Before calling closure: {list:?}");
+///         only_borrows();
+///         println!("After calling closure: {list:?}");
+///     }
+///     Listing 13-4: Defining and calling a closure that captures an immutable reference
+/// This example also illustrates that a variable can bind to a closure definition, and we can
+/// later call the closure by using the variable name and parantheses as if the variable name were
+/// a function name.
+///
+/// Because we can have multiple immutable references to list at the same time, list is still
+/// accessible from the code before the closure definition, after the closure definition but before
+/// the closure is called, and after the closure is called. This code compiles, runs, and prints.
+///
+/// Next, in Listing 13-4, we change the closure body so that it adds an element to the list vector.
+/// The closure now captures a mutable reference:
+///
+///     fn main() {
+///         let mut list = vec![1, 2, 3];
+///         println!("Before defining closure: {list:?}");
+///
+///         let mut borrows_mutably = || list.push(7);
+///
+///         borrows_mutably();
+///         println!("After calling closure: {list:?}");
+///     }
+///     Listing 13-5: Defining and calling a closure that captures a mutable reference
+/// This code compiles, runs, and prints.
+///
+/// Note that there's no longer a println! between the definition and the call of the
+/// borrows_mutably closure: when borrows_mutably is defined, it captures a mutable reference to
+/// list. We don't use the closure again after the closure is called, so the mutable borrow ends.
+/// Between the closure definition and the closure call, an immutable borrow to print isn't allowed
+/// because no other borrows are allowed when there's a mutable borrow. Try adding a println! there
+/// to see what error message you get!
+///
+/// If you want to force the closure to take ownership of the values it uses in the environment
+/// even though the body of the closure doesn't strictly need ownership, you can use the move
+/// keyword before the parameter list.
+///
+/// This technique is mostly useful when passing a closure to a new thread to move the data so that
+/// it's owned by the new thread.
+///
+///     use std::thread;
+///
+///     fn main() {
+///         let list = vec![1, 2, 3];
+///         println!("Before defining closure: {list:?}");
+///
+///         thread::spawn(move || println!("From thread: {list:?}"))
+///             .join()
+///             .unwrap();
+///     }
+///     Listing 13-6: Using move to force the closure for the thread to take ownership of list
 #[derive(Debug, PartialEq, Copy, Clone)]
 enum ShirtColor {
     Red,
@@ -162,4 +232,23 @@ fn main() {
     println!("
         The user with preference {:?} gets {:?}",
         user_pref2, giveaway2);
+
+    let list = vec![1, 2, 3];
+    println!("Before defining closure: {list:?}");
+
+    let only_borrows = || println!("From closure: {list:?}");
+
+    println!("Before calling closure: {list:?}");
+    only_borrows();
+    println!("After calling closure: {list:?}");
+
+    let mut list = vec![1, 2, 3];
+    println!("Before defining closure: {list:?}");
+
+    let mut borrows_mutably = || list.push(7);
+
+    // Can't do it here as borrows_mutably borrows mutably 😁
+    // println!("Before calling closure: {list:?}");
+    borrows_mutably();
+    println!("After calling closure: {list:?}");
 }
