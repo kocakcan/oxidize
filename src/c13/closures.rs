@@ -242,7 +242,103 @@
 /// on a Option<Vec<T>> value to get a new, empty vector if the value is None. The compiler
 /// automatically implements whichever of the Fn traits is applicable for a function definition.
 ///
+/// Now let's look at the standard library method sort_by_key defined on slices, to see how that
+/// differs from unwrap_or_else and why sort_by_key uses FnMut instead of FnOnce for the trait
+/// bound. The closure gets one argument in the form of a reference to the current item in the slice
+/// being considered, and returns a value of type K that can be ordered. This function is useful
+/// when you want to sort a slice by a particular attribute of each item. In Listing 13-7, we have a
+/// list of Rectangle instances and we use sort_by_key to order them by their width attribute from
+/// low to high:
 ///
+///     #[derive(Debug)]
+///     struct Rectangle {
+///         width: u32,
+///         height: u32,
+///     }
+///
+///     fn main() {
+///         let mut list = [
+///             Rectangle { width: 10, height: 1 },
+///             Rectangle { width: 3,  height, 5 },
+///             Rectangle { width: 7,  height: 12},
+///         ];
+///
+///         list.sort_by_key(|r| r.width);
+///         println!("{list:?}");
+///     }
+///     Listing 13-7: Using sort_by_key to order rectangles by width
+/// The reason sort_by_key is defined to take an FnMut closure is that it calls the closure multiple
+/// times: once for each item in the slice. The closure |r| r.width doesn't capture, mutate, or move
+/// out anything from its environment, so it meets the trait bound requirements.
+///
+/// In contrast, Listing 13-8 shows an example of a closure that implements just the FnOnce trait,
+/// because it moves a value out of the environment. The compiler won't let ut use this closure with
+/// sort_by_key:
+///
+///     #[derive(Debug)]
+///     struct Rectangle {
+///         width: u32,
+///         height: u32,
+///     }
+///
+///     fn main() {
+///         let mut list = [
+///             Rectangle { width: 10, height: 1 },
+///             Rectangle { width: 3,  height, 5 },
+///             Rectangle { width: 7,  height: 12},
+///         ];
+///
+///         let mut sort_operations = vec![];
+///         let value = String::from("closure called");
+///
+///         list.sort_by_key(|r| {
+///             sort_operations.push(value);
+///             r.width
+///         });
+///         println!("{list:?}");
+///     }
+///     Listing 13-8: Attempting to use an FnOnce closure with sort_by_key
+/// This is a contrived, convoluted way (that doesn't work) to try and count the number of times
+/// sort_by_key calls the closure when sorting list. This code attempts to do this counting by
+/// pushing a value--a String from the closure's environment--into the sort_operations vector. The
+/// closure captures value and then moves value out of the closure by transferring ownership of
+/// value to the sort_operations vector. This closure can be called once; trying to call it a second
+/// time woulnd't work because value would no longer be in the environment to be pushed into
+/// sort_operations again! Therefore, this closure only implements FnOnce. When we try to compile
+/// this code, we get this error that value can't be moved out of the closure because the closure
+/// must implement FnMut:
+///
+///     error: cannot move out of `value`, a capture variable in an `FnMut` closure
+/// The error points to the line in the closure body that moves value out of the environment. To fix
+/// this, we need to change the closure body so that it doesn't move values out of the environment.
+/// Keeping a counter in the environment and incrementing its value in the closure body is a more
+/// straightforward way to count the number of times the closure is called. The closure in Listing
+/// 13-9 works with sort_by_key because it is only capturing a mutable reference to the
+/// num_sort_operations counter and can therefore be called more than once:
+///
+///     #[derive(Debug)]
+///     struct Rectangle {
+///         width: u32,
+///         height: u32,
+///     }
+///
+///     fn main() {
+///         let mut list = [
+///             Rectangle { width: 10, height: 1 },
+///             Rectangle { width: 3,  height, 5 },
+///             Rectangle { width: 7,  height: 12},
+///         ];
+///
+///         let mut num_sort_operations = 0;
+///         list.sort_by_key(|r| {
+///             num_sort_operations += 1;
+///             r.width
+///         });
+///         println!("{list:?}, sorted in {num_sort_operations} operations");
+///     }
+///     Listing 13-9: Using an FnMut closure with sort_by_key is allowed
+/// In sum, the Fn traits are important when defining or using functions or types that make use of
+/// closures.
 #[derive(Debug, PartialEq, Copy, Clone)]
 enum ShirtColor {
     Red,
@@ -251,6 +347,12 @@ enum ShirtColor {
 
 struct Inventory {
     shirts: Vec<ShirtColor>,
+}
+
+#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
 }
 
 impl Inventory {
@@ -315,4 +417,26 @@ fn main() {
     // println!("Before calling closure: {list:?}");
     borrows_mutably();
     println!("After calling closure: {list:?}");
+
+    let mut list = [
+        Rectangle {
+            width: 10,
+            height: 1,
+        },
+        Rectangle {
+            width: 3,
+            height: 5,
+        },
+        Rectangle {
+            width: 7,
+            height: 12,
+        },
+    ];
+
+    let mut num_sort_operations = 0;
+    list.sort_by_key(|r| {
+        num_sort_operations += 1;
+        r.width
+    });
+    println!("{list:?}, sorted in {num_sort_operations} operations");
 }
