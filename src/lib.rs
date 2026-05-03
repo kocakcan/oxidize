@@ -2,6 +2,7 @@ pub trait FlavorText {
     fn text(&self) -> &str;
 }
 
+#[derive(Debug)]
 pub enum Card<'a> {
     Spell {
         name: &'a str,
@@ -149,4 +150,8 @@ pub fn printd(deck: &[Card]) {
     for card in deck {
         printc(card);
     }
+}
+
+pub fn filter_cards<'a>(deck: &'a [Card], text: &'a str) -> Vec<&'a Card<'a>> {
+    deck.iter().filter(|d| d.text().contains(text)).collect()
 }

@@ -1,4 +1,5 @@
 use get_rusty::FlavorText;
+use get_rusty::filter_cards;
 use get_rusty::{Card, Class, MinionType, SpellSchool};
 
 fn main() {
@@ -40,4 +41,9 @@ fn main() {
     for card in &custom_deck {
         println!("{}", card.text());
     }
+
+    let result = filter_cards(&custom_deck, "Battlecry");
+    println!("{result:?}");
+    let result = filter_cards(&custom_deck, "Combo");
+    println!("{result:?}");
 }
