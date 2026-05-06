@@ -170,3 +170,98 @@
 /// To remove the internal organization from the public API, we can modify the art crate code in
 /// Listing 14-3 to add pub use statements to re-export the items at the top level, as shown in
 /// Listing 14-5.
+//! # Art
+//!
+//! A library for modeling artistic concepts.
+//!
+//! pub use self::kinds::PrimaryColor;
+//! pub use self::kinds::SecondaryColor;
+//! pub use self::utils::mix;
+//!
+//! pub mod kinds {
+//!     // --snip--
+//! }
+//!
+//! pub mod utils {
+//!     // --snip--
+//! }
+//! Listing 14-5: Adding pub use statements to re-export items
+//!
+//! The API documentation that cargo doc generates for this crate will now list and link re-exports
+//! on the front page, making the PrimaryColor and SecondaryColor types and the mix function easier
+//! to find.
+//!
+//! The art crate users can still see and use the internal structure from Listing 14-3 as
+//! demonstrated in Listing 14-4, or they can use the more convenient structure in Listing 14-5, as
+//! shown in Listing 14-6.
+//!
+//!     use art::PrimaryColor;
+//!     use art::mix;
+//!
+//!     fn main() {
+//!         // --snip--
+//!     }
+/// In cases where there are many nested modules, re-exporting the types at the top level with pub
+/// use can make a significant difference in the experience of people who use the crate. Another
+/// common use of pub use is to re-export definitions of a dependency in the current crate to make
+/// that crate's definitions part of your crate's public API.
+///
+/// Adding Metadata to a New Crate
+///
+/// Let's say you have a crate you want to publish. Before publishing, you'll need to add some
+/// metadata in the [package] section of the crate's Cargo.toml file.
+///
+/// Your crate will need a unique name. While you're working on a crate locally, you can name a
+/// crate basically whatever you'd like. However, crate names on crates.io are allocated on a
+/// first-come, first-served basis. Once a crate name is taken, no one else can publish a crate
+/// with that name. Before attempting to publish a crate, search for the name you want to use. If
+/// the name has been used, you will need to find another name and edit the name field in the
+/// Cargo.toml file under the [package] section to use the new name for publishing like so:
+///
+///     [package]
+///     name = "guessing_game"
+/// Even if you've chosen a unique name, when you run cargo publish to publish the crate at this
+/// point, you'll get a warning and then an error:
+///
+/// This results in an error because you're missing some crucial information: A description and
+/// license are required so that people will know what your crate does and under what terms they
+/// can use it. In Cargo.toml, add a description that's just a sentence or two, because it will
+/// appear with your crate in search results. For the license field, you need to give a license
+/// identifier value. For example, to specify that you've licensed your crate using the MIT
+/// license, add the MIT identifier.
+///
+///     [package]
+///     name = "guessing_game"
+///     version = "0.1.0"
+///     edition = "2024"
+///     description = "A fun game where you guess what number the computer has chosen."
+///     license = "MIT OR Apache-2.0"
+///
+/// Publishing a New Version of an Existing Crate
+///
+/// When you've made changes to your crate and are ready to release a new version, you change the
+/// version value specified in your Cargo.toml file and republish using cargo publish command.
+///
+/// Deprecating Versions from Crates.io
+///
+/// Although you can't remove previous versions of a crate, you can prevent any future projects
+/// from adding them as a new dependency. This is useful when a crate version is broken for one
+/// reason or another. In such situations, Cargo supports yanking a crate version.
+///
+/// Yanking a version prevents new projects from depending on that version while allowing all
+/// existing projects that depend on it to continue. Essentially, a yank means that all projects
+/// with a Cargo.lock will not break, and any future Cargo.lock files generated will not use the
+/// yanked version.
+///
+/// To yank a version of a crate, in the directory of the crate that you've previously published,
+/// run cargo yank and specify which version you want to yank. For example, if we've published a
+/// crate named guessing_game version 1.0.1 and we want to yank it, we'd run the following in the
+/// project directory for guessing_game:
+///
+///     cargo yank --vers 1.0.1
+///
+/// By adding --undo to the command, you can also undo a yank and allow projects to start depending
+/// on a version again:
+///
+///     cargo yank --vers 1.0.1 --undo
+/// A yank does not delete any code. It cannot.
