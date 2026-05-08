@@ -87,4 +87,138 @@
 // Our MyBox<T> type can't be dereferenced because we haven't implemented trait ability on our
 // type. To enable dereferencing with the * operator, we implement the Deref trait.
 //
+// Implementing the Deref Trait
 //
+// The Deref trait, provided by the standard library, requires us to implement one method named
+// deref that borrows self and returns a reference to the inner data. Listing 15-10 contains an
+// implementation of Deref to add to the definition of MyBox<T>.
+//
+//      use std::ops::Deref;
+//
+//      impl<T> Deref for MyBox<T> {
+//          type Target = T;
+//
+//          fn deref(&self) -> &Self::Target {
+//              &self.0
+//          }
+//      }
+//      Listing 15-10: Implementing Deref on MyBox<T>
+// The type Target = T; syntax defines an associated type for the Deref trait to use. Associated
+// types are a slightly different way of declaring a generic parameter.
+//
+// We fill in the body of the deref method with &self.0 so that deref returns a reference to the
+// value we want to access with the * operator.
+//
+// Without the Deref trait, the compiler can only dereference & references. The deref method gives
+// the compiler the ability to take a value of any type that implements Deref and call the deref
+// method to get a reference that it knows how to dereference.
+//
+// When we entered *y in Listing 15-9, behind the scenes Rust actually ran this code:
+//
+//      *(y.deref())
+// Rust substitutes the * operator with a call to the deref method and then a plain dereference so
+// that we don't have to think about whether or not we need to call the deref method. This Rust
+// feature lets us write code that functions identically whether we have a regular reference or a
+// type that implements Deref.
+//
+// The reason the deref method returns a reference to a value, and that the plain dereference
+// outside the parantheses in *(y.deref()) is still necessary, has to do with ownership system. If
+// the deref method returned the value directly instead of a reference to the value, the value would
+// be moved out of self. We don't want to take ownership of the inner value inside MyBox<T> in this
+// case or in most cases where we use the dereference operator.
+//
+// Note that the * operator is replaced with a call to the deref method and then a call to the *
+// operator just once, each time we use a * in our code. Because the substitution of the * operator
+// does not recurse infinitely, we end up with data type of i32, which matches the 5 in the
+// assert_eq! in Listing 15-9.
+//
+// Using Deref Coercion in Functions and Methods
+//
+// Deref coercion converts a reference to a type that implements the Deref trait into a reference to
+// another type. For example, deref coercion can convert &String to &str because String implements
+// the Deref trait such that it returns &str. Deref coercion is a convenience Rust performs on
+// arguments to functions and methods, and it works only on types that implement the Deref trait. It
+// happens automatically when we pass a reference to a particular type's value as an argument to a
+// function or method definition. A sequence of calls to the deref method converts the type we
+// provided into the type the parameter needs.
+//
+// Deref coercion was added to Rust so that programmers writing function and method calls don't need
+// to add as many explicit references and dereferences with & and *. The deref coercion feature also
+// lets us write code that can work for either references or smart pointers.
+//
+// To see deref coercion in action, let's use the MyBox<T> type we defined in Listing 15-8 as well
+// as the implementation of Deref that we added in Listing 15-10. Listing 15-11 shows the definition
+// of a function that has a string slice parameter.
+//
+//      fn hello(name: &str) {
+//          println!("Hello, {name}");
+//      }
+//      Listing 15-11: A hello function that has a parameter name of type &str
+// We can call the hello function with a string slice as an argument, such as hello("Rust");, for
+// example. Deref coercion makes it possible to call hello with a reference to a value of type
+// MyBox<String>, as shown in Listing 15-12.
+//
+//      fn main() {
+//          let m = MyBox::new(String::from("Rust"));
+//          hello(&m);
+//      }
+//      Listing 15-12: Calling hello with a reference to a MyBox<String> value, which works because
+//      of deref coercion
+// Here, we're calling the hello function with the argument &m, which is a reference to a
+// MyBox<String> value. Because we implemented the Deref trait on MyBox<T> in Listing 15-10, Rust
+// can turn &MyBox<String> into &String by calling deref. The standard library provides an
+// implementation of Deref on String that returns a string slice, and this is in the API
+// documentation for Deref. Rust calls deref again to turn the &String into &str, which matches the
+// hello function's definition.
+//
+// If Rust didn't implement deref coercion, we would have to write the code in Listing 15-13 instead
+// of the code in Listing 15-12 to call hello with a value of type &MyBox<String>.
+//
+//      fn main() {
+//          let m = MyBox::new(String::from("Rust"));
+//          hello(&(*m)[..]);
+//      }
+//      Listing 15-13: The code we would have to write if Rust didn't have deref coercion
+// The (*m) dereferences the MyBox<String> into a String. Then, the & and [..] take a string slice
+// of the String that is equal to the whole string to match the signature of hello. This code
+// without deref coercions is harder to read, write, and understand with all of these symbols
+// involved. Deref coercion allows Rust to handle these conversions for us automatically.
+//
+// When the Deref trait is defined for the types involved, Rust will analyze the types and use
+// Deref::deref as many times as necessary to get a reference to match the parameter's type. The
+// number of times that Deref::deref needs to inserted is resolved at compile time, so there is no
+// runtime penalty for taking advantage of deref coercion!
+//
+// Handling Deref Coercion with Mutable References
+use std::ops::Deref;
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: T) -> MyBox<T> {
+        MyBox(x)
+    }
+}
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+fn hello(name: &str) {
+    println!("Hello, {name}!");
+}
+
+fn main() {
+    let x = 5;
+    let y = MyBox::new(5);
+    let z = MyBox::new(String::from("Can"));
+
+    assert_eq!(5, x);
+    // assert_eq!(5, *y);
+    assert_eq!(5, *(y.deref()));
+    hello(&z);
+}
