@@ -132,6 +132,9 @@
 ///         handle.join().unwrap();
 ///     }
 ///     Listing 16-5: Using the move keyword to force a closure to take ownership of the values it uses
+/// We use move keyword to force the closure to take the ownership of the variables it captures as
+/// we don't know the lifetime of the spawned thread and therefore can't ensure the reference to
+/// that captured value will remain valid.
 use std::thread;
 use std::time::Duration;
 
