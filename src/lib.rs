@@ -152,6 +152,6 @@ pub fn printd(deck: &[Card]) {
     }
 }
 
-pub fn filter_cards<'a>(deck: &'a [Card], text: &'a str) -> Vec<&'a Card<'a>> {
+pub fn filter_cards<'a>(deck: &'a [Card], text: &str) -> Vec<&'a Card<'a>> {
     deck.iter().filter(|d| d.text().contains(text)).collect()
 }
