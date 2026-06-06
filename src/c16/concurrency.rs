@@ -69,6 +69,69 @@
 /// use the closure will then take ownership of the values it uses from the env
 /// ironment, thus transferring ownership of those values from one thread to an
 /// other.
+///
+/// Notice in Listing 16-1 that the closure we pass to thread::spawn takes no arguments: We're not
+/// using any data from the main thread in the spawned thread's code. To use data from the main
+/// thread in the spawned thread, the spawned thread's closure must capture the values it needs.
+/// Listing 16-3 shows an attempt to create a vector in the main thread and use it in the spawned
+/// thread. However, this won't work yet.
+///
+///     use std::thread;
+///
+///     fn main() {
+///         let v = vec![1, 2, 3];
+///
+///         let handle = thread::spawn(|| {
+///             println!("Here's a vector: {v:?}");
+///         });
+///         handle.join().unwrap();
+///     }
+///     Listing 16-3: Attempting to use a vector created by the main thread in another thread
+/// The closure uses v, so it will capture v and make it part of the clousre's environment. Becuase
+/// thread::spawn runs this closure in a new thread, we should be able to access v inside that new
+/// thread. But when we compile this example, we get the following error:
+///
+///     error: closure may outlive the current function, but it borrows `v`, which is owned by the
+///     current function
+/// Rust infers how to capture v, and because println! only needs a reference to v, the closure
+/// tries to borrow v. However, there's a problem: Rust can't tell how long the spawned thread will
+/// run, so it doesn't know whether the reference to v will always be valid.
+///
+/// Listing 16-4 provides a scenario that's more likely to have a reference to v that won't be valid.
+///
+///     use std::thread;
+///
+///     fn main() {
+///         let v = vec![1, 2, 3];
+///
+///         let handle = thread::spawn(|| {
+///             println!("Here's a vector: {v:?}");
+///         });
+///         drop(v);    // oh fuck!
+///         handle.join().unwrap();
+///     }
+///     Listing 16-4: A thread with a closure that attempts to capture a reference to v from a main
+///     thread that drops v
+/// If Rust allowed us to run this code, there's a possibility that the spawned thread would be
+/// immediately put in the background without running at all. The spawned thread has a reference to
+/// v inside, but the main thread immediately drops v, using the drop function. Then, when the
+/// spawned thread starts to execute, v is no longer valid, so a reference to it is also invalid.
+///
+/// By adding the move keyword before the closure, we force the closure to take ownership of the
+/// values it's using rather than allowing Rust to infer that it would borrow the values. The
+/// modification to Listing 16-3 shown in Listing 16-5 will compile and run as we intend.
+///
+///     use std::thread;
+///
+///     fn main() {
+///         let v = vec![1, 2, 3];
+///
+///         let handle = thread::spawn(move || {
+///             println!("Here's a vector: {v:?}");
+///         });
+///         handle.join().unwrap();
+///     }
+///     Listing 16-5: Using the move keyword to force a closure to take ownership of the values it uses
 use std::thread;
 use std::time::Duration;
 
