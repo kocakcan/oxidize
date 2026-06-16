@@ -54,3 +54,30 @@
 /// the methods called by our library's users on the Post instance, but they don't have to manage
 /// the state changes directly. Also, users can't make a mistake with the states, such as
 /// publishing a post before it's reviewed.
+///
+/// Defining Post and Creating a New Instance
+///
+/// We know we need a public Post struct that holds some content, so we'll start with the
+/// definition of the struct and an associated public new function to create an instance of Post.
+/// We'll also make a private State trait that will define the behaviour that all the state objects
+/// for a Post must have.
+///
+/// Then, Post will hold a trait object of Box<dyn State> inside an Option<T> in a private field
+/// named state to hold the state object.
+pub struct Post {
+    state: Option<Box<dyn State>>,
+    content: String,
+}
+
+impl Post {
+    pub fn new() -> Post {
+        Post {
+            state: Some(Box::new(Draft {})),
+            content: String::new(),
+        }
+    }
+}
+
+trait State {}
+struct Draft {}
+impl State for Draft {}
