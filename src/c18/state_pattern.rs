@@ -64,20 +64,186 @@
 ///
 /// Then, Post will hold a trait object of Box<dyn State> inside an Option<T> in a private field
 /// named state to hold the state object.
+///
+/// The State trait defines the behaviour shared by different post states. The state objects are
+/// Draft, PendingReview, and Published, and they will all implement the State trait. For now, the
+/// trait doesn't have any methods, and we'll start by defining just the Draft state because that
+/// is the state we want a post to start in.
+///
+/// When we create a new Post, we set its state field to a Some value that holds a Box. This Box
+/// points to a new instance of the Draft struct. This ensures that whenever we create a new
+/// instance of Post, it will start out as a draft. Because the state field of Post is private,
+/// there is no way to create a Post in any other state. In the Post::new function, we set the
+/// content field to a new, empty String.
+///
+/// Storing the Text of the Post Content
+///
+/// We want to be able to call a method named add_text and pass it a &str that is then added as the
+/// text content of the blog post. We implement this as a method, rather than exposing the content
+/// field as pub, so that later we can implement a method that will control how the content field's
+/// data is read.
+///
+/// The add_text method takes a mutable reference to self because we're changing the Post instance
+/// that we're calling add_text on. We then call push_str on the String in content and pass the
+/// text argument to add to the saved content. This behaviour doesn't depend on the state the post
+/// is in, so it's not part of the state pattern. The add_text method doesn't interact with the
+/// state field at all, but it is part of the behaviour we want to support.
+///
+/// Ensuring That the Content of a Draft Post is Empty
+///
+/// Even after we've called add_text and added some content to our post, we still want the content
+/// method to return an empty string slice because the post is still in the draft state.
+///
+/// Summary
+///
+/// Regardless of whether you think Rust is an object-oriented language, you now know that you can
+/// use trait objects to get some object-oriented features in Rust. Dynamic dispatch can give your
+/// code some flexibility in exchange for a bit of runtime performance. You can use this
+/// flexibility to implement object-oriented patterns that can help your code's maintainability.
+/// Rust also has other features, like ownership, that object-oriented languages don't have. An
+/// object-oriented pattern won't always be the best way to take advantage of Rust's strengths, but
+/// it is an available option.
+///
+/// Context: The struct/trait approach is extensible in the sense that an API client could
+/// potentially create a new state (such as Retracted) without changing the core API functionality.
+/// When adding this state, the methods for other states do not need to be changed. Whereas with
+/// enums, a client cannot add a new branch to the enum. Moreover, all match expressions must be
+/// updated when a state is added.
+///
+/// A match is not likely to be slower than dynamic dispatch. A match is a simple branch based on
+/// an enum's tag, while dynamic dispatch requires a layer of indirection through a trait object's
+/// virtual table with non-inlined function calls.
+///
+/// An API client cannot add a new method for existing states in the struct/trait approach, they
+/// can only add new state. The methods are fixed by the API author's trait definition. Note that
+/// you could add a new method which only builds on existing methods via extension traits, such as:
+///
+///     trait StateExt {
+///         fn request_review_twice(self: Box<Self>) -> Box<dyn State>;
+///     }
+///
+///     impl<S: State> StateExt for S {
+///         fn request_review_twice(self: Box<Self>) -> Box<dyn State> {
+///             self.request_review().request_review()
+///         }
+///     }
+/// But these extensions cannot read the private data of the states.
 pub struct Post {
-    state: Option<Box<dyn State>>,
+    // state: Option<Box<dyn State>>,
+    content: String,
+}
+
+pub struct DraftPost {
     content: String,
 }
 
 impl Post {
-    pub fn new() -> Post {
-        Post {
-            state: Some(Box::new(Draft {})),
+    pub fn new() -> DraftPost {
+        DraftPost {
             content: String::new(),
+        }
+    }
+
+    pub fn add_text(&mut self, text: &str) {
+        self.content.push_str(text);
+    }
+
+    pub fn content(&self) -> &str {
+        // ""
+        // self.state.as_ref().unwrap().content(self)
+        &self.content
+    }
+
+    // pub fn request_review(&mut self) {
+    //     if let Some(s) = self.state.take() {
+    //         self.state = Some(s.request_review())
+    //     }
+    // }
+
+    // pub fn approve(&mut self) {
+    //     if let Some(s) = self.state.take() {
+    //         self.state = Some(s.approve())
+    //     }
+    // }
+}
+
+impl DraftPost {
+    pub fn add_text(&mut self, text: &str) {
+        self.content.push_str(text);
+    }
+
+    pub fn request_review(self) -> PendingReviewPost {
+        PendingReviewPost {
+            content: self.content,
         }
     }
 }
 
-trait State {}
+pub struct PendingReviewPost {
+    content: String,
+}
+
+impl PendingReviewPost {
+    pub fn approve(self) -> Post {
+        Post {
+            content: self.content,
+        }
+    }
+}
+
+trait State {
+    fn request_review(self: Box<Self>) -> Box<dyn State>;
+    fn approve(self: Box<Self>) -> Box<dyn State>;
+    fn content<'a>(&self, post: &'a Post) -> &'a str {
+        ""
+    }
+}
+
 struct Draft {}
-impl State for Draft {}
+
+impl State for Draft {
+    fn request_review(self: Box<Self>) -> Box<dyn State> {
+        Box::new(PendingReview {})
+    }
+
+    fn approve(self: Box<Self>) -> Box<dyn State> {
+        self
+    }
+}
+
+struct PendingReview {}
+
+impl State for PendingReview {
+    fn request_review(self: Box<Self>) -> Box<dyn State> {
+        self
+    }
+
+    fn approve(self: Box<Self>) -> Box<dyn State> {
+        Box::new(Published {})
+    }
+}
+
+struct Published {}
+
+impl State for Published {
+    fn request_review(self: Box<Self>) -> Box<dyn State> {
+        self
+    }
+
+    fn approve(self: Box<Self>) -> Box<dyn State> {
+        self
+    }
+
+    fn content<'a>(&self, post: &'a Post) -> &'a str {
+        &post.content
+    }
+}
+
+fn main() {
+    let mut post = Post::new();
+
+    post.add_text("I ate a salad for lunch today");
+    let post = post.request_review();
+    let post = post.approve();
+    assert_eq!("I ate a salad for lunch today", post.content());
+}
