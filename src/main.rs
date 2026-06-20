@@ -39,7 +39,7 @@ fn main() {
     ];
 
     for card in &custom_deck {
-        println!("{}", card.text());
+        println!("{}", card);
     }
 
     let result = filter_cards(&custom_deck, "Battlecry");

@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub trait FlavorText {
     fn text(&self) -> &str;
 }
@@ -94,61 +96,15 @@ impl<'a> FlavorText for Card<'a> {
     }
 }
 
-fn printc(card: &Card) {
-    match card {
-        Card::Spell {
-            name,
-            mana_cost,
-            spell_school,
-            class,
-            text,
-        } => {
-            println!(
-                "Name: {} | Mana: {} | Spell school: {:?} | Class: {:?} | Text: {}",
-                name, mana_cost, spell_school, class, text
-            );
+impl<'a> fmt::Display for Card<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Card::Spell{name, mana_cost, spell_school, class, text} => write!(f, "Name: {} | Mana: {} | Spell school: {:?} | Class: {:?} | Text: {}", name, mana_cost, spell_school, class, text),
+            Card::Minion{name, mana_cost, minion_type, class, text} => write!(f, "Name:{} | Mana: {} | Minion type: {:?} | Class: {:?} | Text: {}", name, mana_cost, minion_type, class, text),
+            Card::Hero{name, mana_cost, class, text} |
+            Card::Weapon{name, mana_cost, class, text} |
+            Card::Location{name, mana_cost, class, text} => write!(f, "Name: {} | Mana: {} | Class: {:?} | Text: {}", name, mana_cost, class, text),
         }
-        Card::Minion {
-            name,
-            mana_cost,
-            minion_type,
-            class,
-            text,
-        } => {
-            println!(
-                "Name: {} | Mana: {} | Minion type: {:?} | Class: {:?} | Text: {}",
-                name, mana_cost, minion_type, class, text
-            );
-        }
-        Card::Location {
-            name,
-            mana_cost,
-            class,
-            text,
-        }
-        | Card::Weapon {
-            name,
-            mana_cost,
-            class,
-            text,
-        }
-        | Card::Hero {
-            name,
-            mana_cost,
-            class,
-            text,
-        } => {
-            println!(
-                "Name: {} | Mana: {} | Class: {:?} | Text: {}",
-                name, mana_cost, class, text
-            );
-        }
-    }
-}
-
-pub fn printd(deck: &[Card]) {
-    for card in deck {
-        printc(card);
     }
 }
 
