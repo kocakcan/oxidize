@@ -50,7 +50,26 @@ impl fmt::Display for Champion {
 }
 
 impl Champion {
-    fn cast_skill(&self, skill: Skill) -> Result<(), SkillError> {
+    fn new(
+        name: String,
+        hp: u32,
+        mana: u32,
+        level: u8,
+        ad: u32,
+        ap: u32,
+        skills: [Skill; 4],
+    ) -> Self {
+        Self {
+            name,
+            hp,
+            mana,
+            level,
+            ad,
+            ap,
+            skills,
+        }
+    }
+    fn cast_skill(&mut self, skill: Skill) -> Result<(), SkillError> {
         match skill {
             Skill::Q {
                 required_mana: mana,
@@ -71,7 +90,8 @@ impl Champion {
                 if self.mana < mana {
                     Err(SkillError::OutOfMana(String::from("You have no mana")))
                 } else {
-                    Ok(println!("{} deals some damage!", self.name))
+                    self.mana -= mana;
+                    Ok(())
                 }
             }
         }
@@ -79,14 +99,14 @@ impl Champion {
 }
 
 fn main() {
-    let ezreal: Champion = Champion {
-        name: String::from("Ezreal"),
-        hp: 2334,
-        mana: 1565,
-        level: 18,
-        ad: 124,
-        ap: 0,
-        skills: [
+    let mut ezreal: Champion = Champion::new(
+        String::from("Ezreal"),
+        2334,
+        1565,
+        18,
+        124,
+        0,
+        [
             Skill::Q {
                 name: String::from("Mystic Shot"),
                 damage: 300,
@@ -108,11 +128,16 @@ fn main() {
                 required_mana: 100,
             },
         ],
-    };
+    );
     println!("{}", ezreal);
-    ezreal.cast_skill(Skill::Q {
+    ezreal.mana = 25;
+    let result = ezreal.cast_skill(Skill::Q {
         name: String::from("Mystic Shot"),
         damage: 300,
         required_mana: 28,
     });
+    match result {
+        Ok(()) => println!("{} deals some damage", ezreal.name),
+        Err(SkillError::OutOfMana(e)) => println!("Error: {e}"),
+    }
 }

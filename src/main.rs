@@ -1,3 +1,4 @@
+mod skill;
 use get_rusty::FlavorText;
 use get_rusty::filter_cards;
 use get_rusty::{Card, Class, MinionType, SpellSchool};
