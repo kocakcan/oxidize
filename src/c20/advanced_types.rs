@@ -34,3 +34,25 @@
 /// Same trick applies to panic!, continue, break, and infinite loop {} (without a break).
 ///
 /// 4. Dynamically Sized Types (DSTs) & Sized
+/// Some types' size is only known at runtime, e.g. str (not &str !) and dyn Trait. Since Rust must
+/// know a type's size to allocate it as a plain variable, you can't do let s: str = ... .
+/// Golden rule: DSTs must always sit behind a pointer that carries extra metadata (length or
+/// vtable):
+///
+///     -> &str -> pointer + length
+///     -> Box<dyn Trait> / &dyn Trait -> pointer + vtable
+/// Rust auto-adds a Sized bound to every generic type parameter:
+///
+///     fn generic<T>(t: T) { ... }
+///     fn generic<T: Sized>(t: T) { ... }
+/// To opt out, use ?Sized but then you must take the parameter by reference (or other pointer),
+/// since an unsized value can't be passed by itself:
+///
+///     fn generic<T: ?Sized>(t: &T) { ... }
+use std::fmt::Debug;
+
+fn generic<T: ?Sized + Debug>(t: &T) {
+    println!("{:?}", t);
+}
+
+fn main() {}
