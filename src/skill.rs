@@ -62,7 +62,8 @@ impl Champion {
             skills,
         }
     }
-    fn cast_skill(&mut self, slot: SkillSlot) -> Result<(), SkillError> {
+    // TODO: cast a skill and damage other champion
+    fn cast_skill(&mut self, slot: SkillSlot, target: &mut Champion) -> Result<(), SkillError> {
         let skill = self
             .skills
             .iter()
@@ -72,6 +73,7 @@ impl Champion {
             Err(SkillError::OutOfMana(String::from("You have no mana")))
         } else {
             self.mana -= skill.required_mana;
+            target.hp -= skill.damage;
             Ok(())
         }
     }
@@ -112,6 +114,43 @@ fn main() {
             },
         ],
     );
+    let mut lucian: Champion = Champion::new(
+        String::from("Lucian"),
+        2341,
+        1051,
+        18,
+        102,
+        0,
+        [
+            Skill {
+                slot: SkillSlot::Q,
+                name: String::from("Piercing Light"),
+                damage: 220,
+                required_mana: 80,
+            },
+            Skill {
+                slot: SkillSlot::W,
+                name: String::from("Ardent Blaze"),
+                damage: 215,
+                required_mana: 60,
+            },
+            Skill {
+                slot: SkillSlot::E,
+                name: String::from("Relentless Pursuit"),
+                damage: 0,
+                required_mana: 0,
+            },
+            Skill {
+                slot: SkillSlot::R,
+                name: String::from("The Culling"),
+                damage: 1000,
+                required_mana: 100,
+            },
+        ],
+    );
+
     println!("{}", ezreal);
-    println!("{:?}", ezreal.cast_skill(SkillSlot::Q));
+    println!("{}", lucian);
+    println!("{:?}", ezreal.cast_skill(SkillSlot::Q, &mut lucian));
+    println!("{}", lucian);
 }
