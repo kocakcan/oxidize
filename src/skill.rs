@@ -1,29 +1,22 @@
 use std::fmt;
 
-#[derive(Debug)]
-enum Skill {
-    Q {
-        name: String,
-        damage: u32,
-        required_mana: u32,
-    },
-    W {
-        name: String,
-        damage: u32,
-        required_mana: u32,
-    },
-    E {
-        name: String,
-        damage: u32,
-        required_mana: u32,
-    },
-    R {
-        name: String,
-        damage: u32,
-        required_mana: u32,
-    },
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum SkillSlot {
+    Q,
+    W,
+    E,
+    R,
 }
 
+#[derive(Debug)]
+struct Skill {
+    slot: SkillSlot,
+    name: String,
+    damage: u32,
+    required_mana: u32,
+}
+
+#[derive(Debug)]
 enum SkillError {
     OutOfMana(String),
     // SkillNotLearned(String),
@@ -69,31 +62,17 @@ impl Champion {
             skills,
         }
     }
-    fn cast_skill(&mut self, skill: Skill) -> Result<(), SkillError> {
-        match skill {
-            Skill::Q {
-                required_mana: mana,
-                ..
-            }
-            | Skill::W {
-                required_mana: mana,
-                ..
-            }
-            | Skill::E {
-                required_mana: mana,
-                ..
-            }
-            | Skill::R {
-                required_mana: mana,
-                ..
-            } => {
-                if self.mana < mana {
-                    Err(SkillError::OutOfMana(String::from("You have no mana")))
-                } else {
-                    self.mana -= mana;
-                    Ok(())
-                }
-            }
+    fn cast_skill(&mut self, slot: SkillSlot) -> Result<(), SkillError> {
+        let skill = self
+            .skills
+            .iter()
+            .find(|s| s.slot == slot)
+            .expect("You're not playing Hwei 👀");
+        if self.mana < skill.required_mana {
+            Err(SkillError::OutOfMana(String::from("You have no mana")))
+        } else {
+            self.mana -= skill.required_mana;
+            Ok(())
         }
     }
 }
@@ -107,22 +86,26 @@ fn main() {
         124,
         0,
         [
-            Skill::Q {
+            Skill {
+                slot: SkillSlot::Q,
                 name: String::from("Mystic Shot"),
                 damage: 300,
                 required_mana: 28,
             },
-            Skill::W {
+            Skill {
+                slot: SkillSlot::W,
                 name: String::from("Essence Flux"),
                 damage: 200,
                 required_mana: 50,
             },
-            Skill::E {
+            Skill {
+                slot: SkillSlot::E,
                 name: String::from("Arcane Shift"),
                 damage: 140,
                 required_mana: 70,
             },
-            Skill::R {
+            Skill {
+                slot: SkillSlot::R,
                 name: String::from("Trueshot Barrage"),
                 damage: 600,
                 required_mana: 100,
@@ -130,14 +113,5 @@ fn main() {
         ],
     );
     println!("{}", ezreal);
-    ezreal.mana = 25;
-    let result = ezreal.cast_skill(Skill::Q {
-        name: String::from("Mystic Shot"),
-        damage: 300,
-        required_mana: 28,
-    });
-    match result {
-        Ok(()) => println!("{} deals some damage", ezreal.name),
-        Err(SkillError::OutOfMana(e)) => println!("Error: {e}"),
-    }
+    println!("{:?}", ezreal.cast_skill(SkillSlot::Q));
 }
