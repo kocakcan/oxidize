@@ -44,6 +44,35 @@
 /// connection, we'll start a new function for processing connections. In this new
 /// handle_connection function, we'll read data from the TCP stream and print it so that we can see
 /// the data being sent from the browser.
+///
+/// Looking More Closely at an HTTP Request
+///     Method Request-URI HTTP-Version CRLF
+///     header CRLF
+///     message-body
+///
+/// The first line is the request line that holds information about what the client is requesting.
+/// The first part of the request line indicates the method being used, such as GET or POST, which
+/// describes how the client is making the request. Our client used a GET request, which means it
+/// is asking for information.
+///
+/// The next part of the request line is /, which indicates the uniform resource identifier (URI)
+/// the client is requesting: A URI is almost, but not quite, the same as a uniform resource
+/// locator (URL).
+///
+/// The last part is the HTTP version the client uses, and then the request line ends in a CRLF
+/// sequence. (CRLF stands for carriage return and line feed, which are terms from the typewriter
+/// days) The CRLF sequence can also be written as \r\n, where \r is a carriage return and \n is a
+/// line feed. The CRLF sequence separates the request line from the rest of the request data. Note
+/// that when the CRLF is printed, we see a new line start rather than \r\n.
+///
+/// Looking at the request line data we received from running our program so far, we see that GET
+/// is the method, / is the request URI, and HTTP/1.1 is the version.
+///
+/// After the request line, the remaining lines starting from Host: onwards are headers. GET
+/// requests have no body.
+///
+/// Writing a Response
+///
 use std::{
     io::{BufReader, prelude::*},
     net::{TcpListener, TcpStream},
