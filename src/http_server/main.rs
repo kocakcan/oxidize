@@ -73,7 +73,26 @@
 ///
 /// Writing a Response
 ///
+/// Responses have the following format:
+///
+///     HTTP-Version Status-Code Reason-Phrase CRLF
+///     headers CRLF
+///     message-body
+/// The first line is a status line that contains the HTTP version used in the response, a numeric
+/// status code that summarizes the result of the request, and a reason phrase that provides a text
+/// description of the status code. After the CRLF sequence are any headers, another CRLF sequence,
+/// and the body of the response.
+///
+/// Here is an example response that uses HTTP version 1.1 and has a status code of 200, and OK
+/// reason, no headers, and no body:
+///
+///     HTTP/1.1 200 OK\r\n\r\n
+/// The status code 200 is the standard success response. The next is a tiny successful HTTP
+/// response.
+///
+/// Returning Real HTML
 use std::{
+    fs,
     io::{BufReader, prelude::*},
     net::{TcpListener, TcpStream},
 };
@@ -94,6 +113,11 @@ fn handle_connection(mut stream: TcpStream) {
         .map(|result| result.unwrap())
         .take_while(|line| !line.is_empty())
         .collect();
+    let status_line = "HTTP/1.1 200 OK";
+    let contents = fs::read_to_string("hello.html").unwrap();
+    let length = contents.len();
+    let response =
+        format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
-    println!("Request: {http_request:#?}");
+    stream.write_all(response.as_bytes()).unwrap();
 }
