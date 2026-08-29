@@ -90,19 +90,31 @@
 /// The status code 200 is the standard success response. The next is a tiny successful HTTP
 /// response.
 ///
-/// Returning Real HTML
+/// Improving Throughput with a Thread Pool
+///
+/// A thread pool is a group of spawned threads that are ready and waiting to handle a task. When
+/// the program receives a new task, it assigns one of the threads in the pool to the task, and that
+/// thread will process the task. The remaining threads in the pool are available to handle any
+/// other tasks that come in while the first thread is processing. When the first thread is done
+/// processing its task, it's returned to the pool of idle threads, ready to handle a new task. A
+/// thread pool allows you to process connections concurrently, increasing the throughput of your server.
 use std::{
     fs,
     io::{BufReader, prelude::*},
     net::{TcpListener, TcpStream},
+    thread,
+    time::Duration,
 };
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let pool = ThreadPool::new(4);
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
-        handle_connection(stream);
+        pool.execute(|| {
+            handle_connection(stream);
+        });
     }
 }
 
@@ -110,10 +122,13 @@ fn handle_connection(mut stream: TcpStream) {
     let buf_reader = BufReader::new(&stream);
     let request_line = buf_reader.lines().next().unwrap().unwrap();
 
-    let (status_line, filename) = if request_line == "GET / HTTP/1.1" {
-        ("HTTP/1.1 200 OK", "hello.html")
-    } else {
-        ("HTTP/1.1 404 NOT FOUND", "404.html")
+    let (status_line, filename) = match &request_line[..] {
+        "GET / HTTP1.1" => ("HTTP/1.1 200 OK", "hello,html"),
+        "GET /sleep HTTP1.1" => {
+            thread::sleep(Duration::from_secs(5));
+            ("HTTP/1.1 200 OK", "hello.html")
+        }
+        _ => ("HTTP/1.1 404 NOT FOUND", "404.html"),
     };
 
     let contents = fs::read_to_string(filename).unwrap();
