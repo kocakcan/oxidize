@@ -1,3 +1,4 @@
+use http_server::ThreadPool;
 /// Building a Single-Threaded Web Server
 ///
 /// The two main protocols involved in web servers are Hypertext Transfer Protocol (HTTP) and
