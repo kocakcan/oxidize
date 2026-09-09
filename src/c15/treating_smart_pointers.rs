@@ -55,7 +55,7 @@
 // Let's build a wrapper type similar to the Box<T> type provided by the standard library to
 // experience how smart pointer types behave differently from references by default.
 //
-//  Note: There's one big difference between the MyBox<T> type we're aboutt to build and the real
+//  Note: There's one big difference between the MyBox<T> type we're about to build and the real
 //  Box<T>: Our version will not store its data on the heap. We are focusing this example on Deref,
 //  so where the data is actually stored is less important than the pointer-like behaviour.
 // The Box<T> type is ultimately defined as a tuple struct with one element, so Listing 15-8
