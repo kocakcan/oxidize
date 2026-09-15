@@ -1,0 +1,36 @@
+   0.045694375s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint: stale: changed "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs"
+   0.045703000s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:           (vs) "/Users/cankocak/oxidize/src/rustfinity/env-variables/target/debug/.fingerprint/env-variables-6e01512ec382bda8/dep-lib-env_variables"
+   0.045706917s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1789489607, nanos: 812190635 } < FileTime { seconds: 1789489638, nanos: 360619870 }
+   0.046516334s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint: fingerprint dirty for env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables)/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("env_variables", ["lib"], "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs", Edition2021) }
+   0.046533084s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/cankocak/oxidize/src/rustfinity/env-variables/target/debug/.fingerprint/env-variables-6e01512ec382bda8/dep-lib-env_variables", reference_mtime: FileTime { seconds: 1789489607, nanos: 812190635 }, stale: "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs", stale_mtime: FileTime { seconds: 1789489638, nanos: 360619870 } }))
+   0.046834042s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint: stale: changed "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs"
+   0.046836709s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:           (vs) "/Users/cankocak/oxidize/src/rustfinity/env-variables/target/debug/.fingerprint/env-variables-073bb3be47bde6aa/dep-test-lib-env_variables"
+   0.046838750s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:                FileTime { seconds: 1789489607, nanos: 812204344 } < FileTime { seconds: 1789489638, nanos: 360619870 }
+   0.046933959s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint: fingerprint dirty for env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables)/Check { test: true }/TargetInner { name_inferred: true, ..: lib_target("env_variables", ["lib"], "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs", Edition2021) }
+   0.046938917s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="env_variables"}: cargo::core::compiler::fingerprint:     dirty: FsStatusOutdated(StaleItem(ChangedFile { reference: "/Users/cankocak/oxidize/src/rustfinity/env-variables/target/debug/.fingerprint/env-variables-073bb3be47bde6aa/dep-test-lib-env_variables", reference_mtime: FileTime { seconds: 1789489607, nanos: 812204344 }, stale: "/Users/cankocak/oxidize/src/rustfinity/env-variables/src/lib.rs", stale_mtime: FileTime { seconds: 1789489638, nanos: 360619870 } }))
+   0.047106875s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="tests"}: cargo::core::compiler::fingerprint: fingerprint error for env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables)/Check { test: true }/TargetInner { kind: "test", name: "tests", benched: false, ..: with_path("/Users/cankocak/oxidize/src/rustfinity/env-variables/tests/tests.rs", Edition2021) }
+   0.047111792s  INFO prepare_target{force=false package_id=env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables) target="tests"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/cankocak/oxidize/src/rustfinity/env-variables/target/debug/.fingerprint/env-variables-17ea60c072af03d1/test-integration-test-tests`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: cargo_util::paths::read_bytes
+   2: cargo_util::paths::read
+   3: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   4: cargo::core::compiler::fingerprint::prepare_target
+   5: cargo::core::compiler::compile
+   6: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   7: cargo::ops::cargo_compile::compile_ws
+   8: cargo::ops::cargo_compile::compile_with_exec
+   9: cargo::ops::cargo_compile::compile
+  10: cargo::commands::check::exec
+  11: <cargo::cli::Exec>::exec
+  12: cargo::main
+  13: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  14: std::rt::lang_start::<()>::{closure#0}
+  15: std::rt::lang_start_internal
+  16: _main
+    Checking env-variables v0.1.0 (/Users/cankocak/oxidize/src/rustfinity/env-variables)
+error: could not compile `env-variables` (test "tests") due to 1 previous error
