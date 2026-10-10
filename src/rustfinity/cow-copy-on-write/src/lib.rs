@@ -45,14 +45,15 @@ pub fn trim_and_lowercase(s: &str) -> Cow<'_, str> {
     // TODO: Check if the string needs trimming or lowercasing
     // Only return Cow::Borrowed if absolutely no change is needed
     // Otherwise return Cow::Owned with trimmed and lowercased string
-    for c in s.chars() {
-        if c.is_lowercase() || c.is_whitespace() {
-            return Cow::Owned(s.trim().to_lowercase());
-        } else {
-            continue;
-        }
+    let trimmed = s.trim();
+    let needs_trim = trimmed.len() != s.len();
+    let needs_lowercase = trimmed.chars().any(|c| c.is_uppercase());
+
+    if needs_trim || needs_lowercase {
+        Cow::Owned(trimmed.to_lowercase())
+    } else {
+        Cow::Borrowed(s)
     }
-    Cow::Borrowed(s)
 }
 
 // =============================================================================
@@ -138,7 +139,11 @@ where
     // TODO: Check if predicate returns true for the string
     // If yes, transform all characters and use to_mut() to update
     // Return the (potentially modified) Cow
-    unimplemented!()
+    if predicate(&s) {
+        let transformed: String = s.chars().map(transform).collect();
+        *s.to_mut() = transformed;
+    }
+    s
 }
 
 // =============================================================================
@@ -155,13 +160,17 @@ impl<'a> TextProcessor<'a> {
     /// Creates a new TextProcessor with borrowed text.
     pub fn new(text: &'a str) -> Self {
         // TODO: Create TextProcessor with Cow::Borrowed
-        unimplemented!()
+        Self {
+            text: Cow::Borrowed(text),
+        }
     }
 
     /// Creates a new TextProcessor with owned text.
     pub fn from_owned(text: String) -> Self {
         // TODO: Create TextProcessor with Cow::Owned
-        unimplemented!()
+        Self {
+            text: Cow::Owned(text),
+        }
     }
 
     /// Processes the text by trimming and normalizing whitespace.
@@ -171,26 +180,43 @@ impl<'a> TextProcessor<'a> {
         // TODO: Trim the text and collapse multiple whitespace to single spaces
         // Only modify if needed
         // Update self.text to Cow::Owned if changes were made
-        unimplemented!()
+        let mut words = self.text.split_whitespace();
+        let Some(first) = words.next() else {
+            if !self.text.is_empty() {
+                self.text = Cow::Borrowed("");
+            }
+            return;
+        };
+
+        let mut out = String::with_capacity(self.text.len());
+        out.push_str(first);
+        for w in words {
+            out.push(' ');
+            out.push_str(w);
+        }
+
+        if out != *self.text {
+            self.text = Cow::Owned(out);
+        }
     }
 
     /// Returns a reference to the current text.
     pub fn as_str(&self) -> &str {
         // TODO: Return a reference to the inner text
-        unimplemented!()
+        &self.text
     }
 
     /// Converts the processor into a String.
     pub fn into_string(self) -> String {
         // TODO: Use into_owned() to convert to String
-        unimplemented!()
+        self.text.into_owned()
     }
 
     /// Checks if the text is currently borrowed.
     pub fn is_borrowed(&self) -> bool {
         // TODO: Return true if self.text is Cow::Borrowed
         // Hint: use matches! macro
-        unimplemented!()
+        matches!(self.text, Cow::Borrowed(_))
     }
 
     /// Appends text to the processor.
@@ -198,26 +224,28 @@ impl<'a> TextProcessor<'a> {
     /// This will convert to owned if currently borrowed.
     pub fn append(&mut self, text: &str) {
         // TODO: Use to_mut() to get mutable access and append
-        unimplemented!()
+        self.text.to_mut().push_str(text);
     }
 
     /// Gets the length of the text.
     pub fn len(&self) -> usize {
         // TODO: Return the byte length of the text
-        unimplemented!()
+        self.text.len()
     }
 
     /// Checks if the text is empty.
     pub fn is_empty(&self) -> bool {
         // TODO: Return true if text is empty
-        unimplemented!()
+        self.text.is_empty()
     }
 }
 
 impl Default for TextProcessor<'_> {
     fn default() -> Self {
         // TODO: Return a TextProcessor with an empty owned String
-        unimplemented!()
+        Self {
+            text: Cow::Owned(String::new()),
+        }
     }
 }
 
