@@ -85,7 +85,12 @@ pub fn deduplicate_sorted<T: Clone + PartialEq>(values: &[T]) -> Cow<'_, [T]> {
     // TODO: Check if there are any consecutive duplicates
     // If no duplicates, return Cow::Borrowed
     // If has duplicates, return Cow::Owned with duplicates removed
-    unimplemented!()
+    if !values.windows(2).any(|w| w[0] == w[1]) {
+        return Cow::Borrowed(values);
+    }
+    let mut owned = values.to_vec();
+    owned.dedup();
+    Cow::Owned(owned)
 }
 
 /// Clamps all values to a range [min, max].
@@ -96,7 +101,11 @@ pub fn clamp_values(values: &[i32], min: i32, max: i32) -> Cow<'_, [i32]> {
     // TODO: Check if any values are outside the range
     // If all in range, return Cow::Borrowed
     // If some out of range, return Cow::Owned with clamped values
-    unimplemented!()
+    if values.iter().any(|&v| v < min || v > max) {
+        Cow::Owned(values.iter().map(|&p| p.clamp(min, max)).collect())
+    } else {
+        Cow::Borrowed(values)
+    }
 }
 
 // =============================================================================
@@ -110,7 +119,12 @@ pub fn ensure_capacity<'a>(mut s: Cow<'a, str>, min_len: usize, pad_char: char) 
     // TODO: Check current character count
     // If less than min_len, use s.to_mut() to get mutable access and push pad_char enough times
     // Return the (potentially modified) Cow
-    unimplemented!()
+    let missing = min_len.saturating_sub(s.chars().count());
+
+    if missing > 0 {
+        s.to_mut().extend(std::iter::repeat_n(pad_char, missing));
+    }
+    s
 }
 
 /// Applies a transformation function only if the predicate returns true.
