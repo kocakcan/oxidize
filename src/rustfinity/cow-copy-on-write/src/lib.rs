@@ -45,7 +45,14 @@ pub fn trim_and_lowercase(s: &str) -> Cow<'_, str> {
     // TODO: Check if the string needs trimming or lowercasing
     // Only return Cow::Borrowed if absolutely no change is needed
     // Otherwise return Cow::Owned with trimmed and lowercased string
-    unimplemented!()
+    for c in s.chars() {
+        if c.is_lowercase() || c.is_whitespace() {
+            return Cow::Owned(s.trim().to_lowercase());
+        } else {
+            continue;
+        }
+    }
+    Cow::Borrowed(s)
 }
 
 // =============================================================================
@@ -60,7 +67,14 @@ pub fn remove_zeros(values: &[i32]) -> Cow<'_, [i32]> {
     // TODO: Check if the slice contains any zeros
     // If no zeros, return Cow::Borrowed
     // If has zeros, return Cow::Owned with zeros filtered out
-    unimplemented!()
+    for value in values {
+        if *value == 0 {
+            return Cow::Owned(values.iter().filter(|i| **i != 0).copied().collect());
+        } else {
+            continue;
+        }
+    }
+    Cow::Borrowed(values)
 }
 
 /// Removes consecutive duplicates from a sorted slice.
