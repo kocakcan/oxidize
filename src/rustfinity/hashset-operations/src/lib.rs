@@ -15,31 +15,31 @@ pub fn count_unique(items: &[i32]) -> usize {
 /// Returns elements that appear in both sets (intersection).
 pub fn find_common(set1: &HashSet<i32>, set2: &HashSet<i32>) -> HashSet<i32> {
     // TODO: Find intersection
-    unimplemented!()
+    set1.intersection(set2).copied().collect()
 }
 
 /// Returns elements that appear in either set (union).
 pub fn find_all(set1: &HashSet<i32>, set2: &HashSet<i32>) -> HashSet<i32> {
     // TODO: Find union
-    unimplemented!()
+    set1.union(set2).copied().collect()
 }
 
 /// Returns elements in set1 that are not in set2 (difference).
 pub fn find_difference(set1: &HashSet<i32>, set2: &HashSet<i32>) -> HashSet<i32> {
     // TODO: Find difference
-    unimplemented!()
+    set1.difference(set2).copied().collect()
 }
 
 /// Returns elements that are in exactly one of the sets (symmetric difference).
 pub fn find_symmetric_difference(set1: &HashSet<i32>, set2: &HashSet<i32>) -> HashSet<i32> {
     // TODO: Find symmetric difference
-    unimplemented!()
+    set1.symmetric_difference(set2).copied().collect()
 }
 
 /// Checks if all elements of potential_subset are contained in potential_superset.
 pub fn is_subset(potential_subset: &HashSet<i32>, potential_superset: &HashSet<i32>) -> bool {
     // TODO: Check subset relationship
-    unimplemented!()
+    potential_subset.is_subset(potential_superset)
 }
 
 pub fn main() {
