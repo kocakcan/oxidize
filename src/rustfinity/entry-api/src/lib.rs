@@ -15,7 +15,13 @@ pub fn count_words(text: &str) -> HashMap<String, u32> {
 /// Groups words by their length.
 pub fn group_by_length(words: &[&str]) -> HashMap<usize, Vec<String>> {
     // TODO: Use the Entry API to group words by their length
-    unimplemented!()
+    words.iter().fold(HashMap::new(), |mut groups, &word| {
+        groups
+            .entry(word.len())
+            .or_insert_with(Vec::new)
+            .push(word.to_string());
+        groups
+    })
 }
 
 /// Gets a cached value or computes and caches it if not present.
@@ -25,32 +31,42 @@ where
     F: FnOnce() -> i32,
 {
     // TODO: Use .or_insert_with() for lazy evaluation
-    unimplemented!()
+    *cache.entry(key.to_string()).or_insert_with(compute)
 }
 
 /// Increments the value at the key by 1 if it exists, otherwise inserts the initial value.
 pub fn increment_or_init(map: &mut HashMap<String, i32>, key: &str, init: i32) {
     // TODO: Use .and_modify() combined with .or_insert()
-    unimplemented!()
+    map.entry(key.to_string())
+        .and_modify(|v| *v += 1)
+        .or_insert(init);
 }
 
 /// Merges two HashMaps. If a key exists in both, the values are summed.
 pub fn merge_maps(map1: HashMap<String, i32>, map2: HashMap<String, i32>) -> HashMap<String, i32> {
     // TODO: Use the Entry API to merge maps
-    unimplemented!()
+    let mut result = map1;
+    for (key, value) in map2 {
+        *result.entry(key).or_insert(0) += value;
+    }
+    result
 }
 
 /// Creates a map where each key is an item and the value is the index of its first occurrence.
 pub fn first_occurrence(items: &[&str]) -> HashMap<String, usize> {
     // TODO: Use .or_insert() to only insert the first occurrence index
-    unimplemented!()
+    let mut result = HashMap::new();
+    for (i, item) in items.iter().enumerate() {
+        result.entry(item.to_string()).or_insert(i);
+    }
+    result
 }
 
 /// Adds a value to the vector at the given key.
 /// If the key doesn't exist, creates a new vector with that value.
 pub fn update_or_default(map: &mut HashMap<String, Vec<i32>>, key: &str, value: i32) {
     // TODO: Use .or_default()
-    unimplemented!()
+    map.entry(key.to_string()).or_default().push(value);
 }
 
 // Example usage
