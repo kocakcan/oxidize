@@ -16,13 +16,13 @@ pub fn create_min_heap(items: &[i32]) -> BinaryHeap<Reverse<i32>> {
 /// Removes and returns the maximum element from the heap.
 pub fn pop_max(heap: &mut BinaryHeap<i32>) -> Option<i32> {
     // TODO: Remove and return the maximum element
-    todo!()
+    heap.pop()
 }
 
 /// Returns a reference to the maximum element without removing it.
 pub fn peek_max(heap: &BinaryHeap<i32>) -> Option<&i32> {
     // TODO: Return a reference to the max without removing
-    todo!()
+    heap.peek()
 }
 
 /// Returns the k largest elements in descending order.
