@@ -29,26 +29,54 @@ pub fn peek_max(heap: &BinaryHeap<i32>) -> Option<&i32> {
 /// If k > items.len(), return all items sorted descending.
 pub fn top_k_largest(items: &[i32], k: usize) -> Vec<i32> {
     // TODO: Return the k largest elements in descending order
-    todo!()
+    let mut sorted = items.to_vec();
+    sorted.sort_unstable_by(|a, b| b.cmp(a));
+    sorted.truncate(k);
+    sorted
 }
 
 /// Returns the k smallest elements in ascending order.
 /// If k > items.len(), return all items sorted ascending.
 pub fn top_k_smallest(items: &[i32], k: usize) -> Vec<i32> {
     // TODO: Return the k smallest elements in ascending order
-    todo!()
+    if k == 0 {
+        return Vec::new();
+    }
+
+    let mut heap: BinaryHeap<i32> = BinaryHeap::with_capacity(k.min(items.len()));
+
+    for &item in items {
+        if heap.len() < k {
+            heap.push(item);
+        } else if let Some(&max) = heap.peek() {
+            if item < max {
+                heap.pop();
+                heap.push(item);
+            }
+        }
+    }
+
+    heap.into_sorted_vec()
 }
 
 /// Merges two heaps into one.
 pub fn merge_heaps(heap1: BinaryHeap<i32>, heap2: BinaryHeap<i32>) -> BinaryHeap<i32> {
     // TODO: Merge both heaps into a single heap
-    todo!()
+    let mut merged = heap1;
+    let mut other = heap2;
+    merged.append(&mut other);
+    merged
 }
 
 /// Sorts items in descending order using a BinaryHeap.
 pub fn heap_sort_descending(items: &[i32]) -> Vec<i32> {
     // TODO: Sort items in descending order using a heap
-    todo!()
+    let mut heap: BinaryHeap<i32> = items.iter().copied().collect();
+    let mut out = Vec::with_capacity(heap.len());
+    while let Some(x) = heap.pop() {
+        out.push(x);
+    }
+    out
 }
 
 fn main() {
