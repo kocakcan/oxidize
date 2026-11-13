@@ -48,14 +48,29 @@ where
     F: Fn(&str) -> String,
 {
     // TODO: Group items by the result of key_fn applied to each key
-    unimplemented!()
+    let mut map: HashMap<String, Vec<i32>> = HashMap::with_capacity(items.len());
+
+    for (key, value) in items {
+        map.entry(key_fn(key.as_str())).or_default().push(*value);
+    }
+    map
 }
 
 /// Merges multiple HashMaps into one with pre-allocated capacity.
 /// If a key appears in multiple maps, sum the values.
 pub fn merge_with_capacity(maps: Vec<HashMap<String, i32>>) -> HashMap<String, i32> {
     // TODO: Calculate total capacity, create map, then merge all maps
-    unimplemented!()
+    let total_cap = maps.iter().map(|m| (*m).capacity()).sum();
+    let mut out = HashMap::with_capacity(total_cap);
+
+    for map in maps {
+        for (key, value) in map {
+            out.entry(key)
+                .and_modify(|existing| *existing += value)
+                .or_insert(value);
+        }
+    }
+    out
 }
 
 // Example usage
