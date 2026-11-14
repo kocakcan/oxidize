@@ -1,5 +1,5 @@
 use std::fs::{self, File};
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Read, Seek};
 
 /// Read the entire contents of a file into a String.
 pub fn read_entire_file(path: &str) -> Result<String, io::Error> {
@@ -18,19 +18,22 @@ pub fn count_lines(path: &str) -> Result<usize, io::Error> {
 /// Words are defined as whitespace-separated sequences of characters.
 pub fn count_words(path: &str) -> Result<usize, io::Error> {
     // TODO: Read the file and count whitespace-separated words
-    unimplemented!()
+    let content = fs::read_to_string(path)?;
+    Ok(content.split_whitespace().count())
 }
 
 /// Read all lines from a file into a Vec, with trailing newlines removed.
 pub fn read_lines(path: &str) -> Result<Vec<String>, io::Error> {
     // TODO: Open the file, create a BufReader, and collect all lines
-    unimplemented!()
+    let reader = BufReader::new(File::open(path)?);
+    reader.lines().collect()
 }
 
 /// Read only the first n lines from a file.
 pub fn first_n_lines(path: &str, n: usize) -> Result<Vec<String>, io::Error> {
     // TODO: Read only the first n lines from the file
-    unimplemented!()
+    let reader = BufReader::new(File::open(path)?);
+    reader.lines().take(n).collect()
 }
 
 pub fn main() {
